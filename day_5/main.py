@@ -1,27 +1,29 @@
-import re, pprint
+import re, time
 
 
+def calc_line(x1,y1,x2,y2):
+  deltax = abs(x1-x2)
+  deltay = abs(y1-y2)
+  line = []
+  if deltax == 0:
+    mi = y1 if y1 < y2 else y2
+    ma = y2 if y2 > y1 else y1
+    line = [(x1,y) for y in range(mi,ma+1)]
+  elif deltay == 0:
+    mi = x1 if x1 < x2 else x2
+    ma = x2 if x2 > x1 else x1
+    line = [(x,y1) for x in range(mi,ma+1)]
+  else:
+    mi = x1 if x1 < x2 else x2
+    ma = x2 if x2 > x1 else x1
+    ymi = y1 if y1 < y2 else y2
+    q = 0
+    for i in range(mi,ma+1):
+      line.append((i,ymi+q))
+      q+=1
+  return line
 
-def get_range(a,b):
-  if a < b:
-    return range(a,b+1)
-  return range(b,a+1)
 
-def q(x0, y0, x1, y1):
-    deltax = x1-x0
-    dxsign = int(abs(deltax)/deltax)
-    deltay = y1-y0
-    dysign = int(abs(deltay)/deltay)
-    deltaerr = abs(deltay/deltax)
-    error = 0
-    y = y0
-    for x in range(x0, x1, dxsign):
-        yield x, y
-        error = error + deltaerr
-        while error >= 0.5:
-            y += dysign
-            error -= 1
-    yield x1, y1
 def main(part="part1"):
   coord = {}
   with open('/Users/marcus.dahlstein/Documents/git/adventofcode_2021/day_5/input.txt') as f:
@@ -31,29 +33,14 @@ def main(part="part1"):
       x2 = int(m.group('x2'))
       y1 = int(m.group('y1'))
       y2 = int(m.group('y2'))
-      
-      if x1 == x2:
-        for i in get_range(y1,y2):
-          pos = f"{x1},{i}"
-          if pos not in coord:
-            coord[pos] = 0
-          coord[pos] += 1
-      elif y1 == y2:
-        for i in get_range(x1,x2):
-          pos = f"{i},{y1}"
-          if pos not in coord:
-            coord[pos] = 0
-          coord[pos] += 1
-      else:
-        if part == "part1":
-          continue
-        #print(f"x1: {x1}, x1: {x2}, y1: {y1}, y2: {y2}")
-        coordinates =q(x1,y1,x2,y2)
-        for x,y in list(coordinates):
-          pos = f"{x},{y}"
-          if pos not in coord:
-            coord[pos] = 0
-          coord[pos] += 1
+      if part == "part1" and not (x1 == x2 or y1 == y2):
+        continue
+      coordinates = calc_line(x1,y1,x2,y2)
+      for x,y in coordinates:
+        pos = f"{x},{y}"
+        if pos not in coord:
+          coord[pos] = 0
+        coord[pos] += 1
       
 
 
@@ -63,10 +50,12 @@ def main(part="part1"):
   for k in coord:
     if coord[k] > 1:
       overlaps += 1
-  #pprint.pprint(coord)
   print(f"{part} has overlaps in {overlaps} places")
 
       
 
+start_time = time.time()
 main()     
 main("part2")
+print("--- %s seconds ---" % (time.time() - start_time))
+
